@@ -1,0 +1,31 @@
+{
+  "name": "smartcarcodingchallenge",
+  "version": "1.0.0",
+  "description": "Smartcar API Spec for GM API",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/github.com/DavidStreid.git"
+  },
+  "keywords": [
+    "RESTful"
+  ],
+  "author": "David Streid",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/github.com/DavidStreid/issues"
+  },
+  "homepage": "https://github.com/github.com/DavidStreid#readme",
+  "devDependencies": {
+    "nodemon": "^1.11.0"
+  },
+  "dependencies": {
+    "body-parser": "^1.17.2",
+    "express": "^4.15.4",
+    "request": "^2.81.0"
+  }
+}
