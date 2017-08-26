@@ -5,7 +5,7 @@ var request   = require('request');
 var base = "http://localhost:3000/vehicles/"
 var valid_id = "1234/"
 describe("SmartCar API", function() {
-  describe("getVehicleInfoService", function() {
+  describe("GM: getVehicleInfoService, SmartCar: /", function() {
     it("gets vehicle info if valid ID", function(done) {
 	  let url = base + valid_id
       request(url, function(error, response, body) {
@@ -16,39 +16,53 @@ describe("SmartCar API", function() {
     });
   });
 
-  describe("getSecurityStatusService", function() {
-    it("gets security status if valid ID", function(done) {
-	  let rsc = "doors"
-	  let url = base + valid_id + rsc
-	  let door_status = {}
+  describe("GM:getSecurityStatusService, SmartCar: /door", function() {
+    it("gets security status as boolean of valid door if valid ID", function(done) {
+	  let rsc = "doors";
+	  let url = base + valid_id + rsc;
+	  var pos = new Set(["frontLeft", "backRight", "backLeft", "frontRight"]);
+
 	  // Populate initial door locked status
       request(url, function(error, response, body) {
         expect(response.statusCode).to.equal(200);
         let doors = JSON.parse(body).door_data;
         for(let i = 0; i<doors.length; i++){
-        	door_status[doors[i].location] = doors[i].locked;
-        }
-      });
-
-      // Check to see if each status has been flipped
-      request(url, function(error, response, body) {
-        expect(response.statusCode).to.equal(200);
-        let doors = JSON.parse(body).door_data;
-        console.log(door_status);
-        for(let i = 0; i<doors.length; i++){
-        	console.log(doors[i].location);
-        	console.log(doors[i].locked);
-        	console.log(door_status[doors[i].location]);
-        	expect(doors[i].locked).to.equal(!door_status[doors[i].location]);
+        	expect(true).to.equal(pos.has(doors[i].location));
+        	expect(typeof(doors[i].locked)).to.equal("boolean");
         }
         done();
       });
     });
   });
 
+
+
+  describe("GM:getEnergyService, SmartCar API: /fuel & /battery", function() {
+  	let energyType = [["fuel", "tankLevel","1234"], ["battery", "batteryLevel","1235"]];
+  	for (let i = 0; i<energyType.length; i++){
+  		let type = energyType[i][0];
+  		let field = energyType[i][1];
+  		let id = energyType[i][2];
+
+	    it("gets " + type + " levels as float", function(done) {
+		  let url = base + id + type;
+
+
+		  // Populate initial door locked status
+	      request(url, function(error, response, body) {
+	        expect(response.statusCode).to.equal(200);
+			let pct = JSON.parse(body)[field].percent;
+			expect(0<=pct && pct <= 100).to.equal(true);         
+	      });
+	      done();
+	    });
+  	}
+  });
+
+
   // Check Invalid id
-  let id = "4321/";
-  let host = base + id;
+  let invalid_id = "4321/";
+  let host = base + invalid_id;
   let endpoints = ['','doors','fuel','battery']
   for(let i = 0; i<endpoints.length; i++){
     let e = endpoints[i];

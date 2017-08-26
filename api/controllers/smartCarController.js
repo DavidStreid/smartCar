@@ -79,7 +79,7 @@ function callEnergyService(id, energyType, res){
             res.json({"Error": "Incorrect CarType - Car does not have a " + energyType})  
           }
           else {
-            res.json({"percent": data[energyType].value})  
+            res.json({"percent": parseFloat(data[energyType].value)});
           }
         }
         else if(body.status==404){
