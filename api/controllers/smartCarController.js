@@ -111,7 +111,6 @@ exports.engine = function(req, res) {
   let vehicleEngineService = gmAPI + 'actionEngineService';
   // TODO - Check action is either "STOP" or "START"
   let command = req.body.action == "START" ? "START_VEHICLE" : "STOP_VEHICLE" ;
-  console.log(command);
   let VEngS_Object = {"id": req.params.id, "command": command, "responseType": "JSON" };
 
   request.post(
