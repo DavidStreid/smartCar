@@ -116,7 +116,15 @@ exports.engine = function(req, res) {
   request.post(
     vehicleEngineService, { json: VEngS_Object }, 
     function (error, response, body) {
-      res.json({"status": body.actionResult.status})
+      if (!error && body.status == 200) {
+        res.json({"status": body.actionResult.status})
+      }
+      else if(body.status==404){
+        res.json({"status": 404, "message": "Vehicle Not Found"})
+      }
+      else {
+        res.json({"status": 404, "message": "Service Not Available"}) 
+      }
     }
   );
 };
