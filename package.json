@@ -4,12 +4,13 @@
   "description": "Smartcar API Spec for GM API",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "./node_modules/.bin/mocha --reporter spec",
     "start": "nodemon server.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/github.com/DavidStreid.git"
+    "url": "git+https://github.com/github.com/DavidStreid.git",
+    "desc": "https://mail-attachment.googleusercontent.com/attachment/u/0/?ui=2&ik=0082f283f5&view=att&th=15e11799918cad76&attid=0.1&disp=inline&safe=1&zw&sadnir=1&saddbat=ANGjdJ-T7GxOtlS-KkpAxenOjQxG3Xvd5ORF5BKDm3oqL5qrG8VoJ6YZdlYwfQTHgZmCgPJsLVPFE3jSZONBb5u6SnJkwFZT2wI5UM-Og3LK51kSWzN_3f8AQpTA9yKG6unqf_PxokF3L-7GTmVdWRl8YxJoMMm8bTwIvS3S_52oTbHAVT7te1_-LX0sR8A8X2i0eb92y-IdiEkpyIA7rklJvhdrOTOmNMtNHb1ypQTr_pIftQ9vbQdZflMozUgxw3yD0JY3PdqySl7Y55cIXvT3O2SG50sZ3SVsqOIYovP_dmB00VsP4pmq-GXQhADwCH1RV6Md4CE6rzp5t4WxLCZxNDG1X_rCOUotq9-OEM0oRed3awI3KuyQ4MnJRxYP0sBBRm8U83aDRMsMo5IrdiU9sZ4WtnkhF5ZaeEruHxxWEyMoRs9uXth2rGXesT20-9GlPidwvUBCvOi7gRPE8Znr7JG93qAUVRTbOALwGWXwsUqXQtV4YTFtGjw3qzQtJorL-3mRa9_9tz7Tq87T9weJgjvkkl9G-d_7GLQ-b2f7q5ipVr0Zn7rLKJ7-gGAVPMAgkIx7ykJ7etgPHFsRgQ0DrmDcF_LtI4N2LZF2L2XWrOYRnyk1JkWcX3ZX8lM"
   },
   "keywords": [
     "RESTful"
@@ -21,11 +22,14 @@
   },
   "homepage": "https://github.com/github.com/DavidStreid#readme",
   "devDependencies": {
+    "chai": "^4.1.1",
+    "mocha": "^3.5.0",
     "nodemon": "^1.11.0"
   },
   "dependencies": {
     "body-parser": "^1.17.2",
     "express": "^4.15.4",
-    "request": "^2.81.0"
+    "request": "^2.81.0",
+    "supertest": "^3.0.0"
   }
 }

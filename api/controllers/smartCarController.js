@@ -10,27 +10,26 @@ exports.vehicleInfo = function(req, res) {
 
   // Make Request
   let vehicleInfoService = gmAPI + 'getVehicleInfoService';
-  let VIS_Object = {"id": req.params.id, "responseType": "JSON" };
-  request.post(
-    vehicleInfoService, { json: VIS_Object }, 
-    function (error, response, body) {
-        if (!error && body.status == 200) {
-          let data = body.data;
-          res.json({
-            "vin": data.vin.value,
-            "color": data.color.value,
-            "doorcount": data.fourDoorSedan.value == 'True' ? 4 : 2,
-            "driveTrain": data.driveTrain.value
-          })
-        }
-        else if(body.status==404){
-          res.json({"status": 404, "message": "Vehicle Not Found"})
-        }
-        else {
-          res.json({"status": 404, "message": "Service Not Available"}) 
-        }
+  let VIS_Req = {json: {"id": req.params.id, "responseType": "JSON" }};
+  function callback(error,response,body){
+    if (!error && body.status == 200) {
+      let data = body.data;
+      res.json({
+        "vin": data.vin.value,
+        "color": data.color.value,
+        "doorcount": data.fourDoorSedan.value == 'True' ? 4 : 2,
+        "driveTrain": data.driveTrain.value
+      })
     }
-  );
+    else if(body.status==404){
+      res.json({"status": 404, "message": "Vehicle Not Found"})
+    }
+    else {
+      res.json({"status": 404, "message": "Service Not Available"}) 
+    }
+  }
+
+  let reqPost = request.post(vehicleInfoService, VIS_Req, callback);
 };
 
 exports.security = function(req, res) {
@@ -38,9 +37,9 @@ exports.security = function(req, res) {
 
   // Make Request
   let vehicleSecurityService = gmAPI + 'getSecurityStatusService';
-  let VIS_Object = {"id": req.params.id, "responseType": "JSON" };
+  let VSS_Req = {"id": req.params.id, "responseType": "JSON" };
   request.post(
-    vehicleSecurityService, { json: VIS_Object }, 
+    vehicleSecurityService, { json: VSS_Req }, 
     function (error, response, body) {
         if (!error && body.status == 200) {
           let doors = body.data.doors.values;
@@ -68,10 +67,10 @@ function callEnergyService(id, energyType, res){
 
   // Make Request
   let vehicleEnergyService = gmAPI + 'getEnergyService';
-  let VIS_Object = {"id": id, "responseType": "JSON" };
+  let VES_Req = {"id": id, "responseType": "JSON" };
 
   request.post(
-    vehicleEnergyService, { json: VIS_Object }, 
+    vehicleEnergyService, { json: VES_Req }, 
     function (error, response, body) {
         if (!error && body.status == 200) {
           let data = body.data;
@@ -113,10 +112,10 @@ exports.engine = function(req, res) {
   // TODO - Check action is either "STOP" or "START"
   let command = req.body.action == "START" ? "START_VEHICLE" : "STOP_VEHICLE" ;
   console.log(command);
-  let VIS_Object = {"id": req.params.id, "command": command, "responseType": "JSON" };
+  let VEngS_Object = {"id": req.params.id, "command": command, "responseType": "JSON" };
 
   request.post(
-    vehicleEngineService, { json: VIS_Object }, 
+    vehicleEngineService, { json: VEngS_Object }, 
     function (error, response, body) {
       res.json({"status": body.actionResult.status})
     }
