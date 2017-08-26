@@ -49,7 +49,7 @@ exports.security = function(req, res) {
               "location": doors[i].location.value, 
               "locked": doors[i].locked.value=="False" ? false : true})
           }
-          res.json(door_data)
+          res.json({door_data})
         }
         else if(body.status==404){
           res.json({"status": 404, "message": "Vehicle Not Found"})
