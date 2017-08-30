@@ -67,6 +67,7 @@ describe("SmartCar API", function() {
       });
     });
   });
+
   describe("GM:getEnergyService, SmartCar API: /fuel & /battery", function() {
   	let energyType = [["fuel", "tankLevel","1234/"], ["battery", "batteryLevel","1235/"]];
     it("gets energy levels as float", function(done) {
@@ -89,4 +90,17 @@ describe("SmartCar API", function() {
     });
   });
 
+  describe("GM:actionEngineService, SmartCar API: /engine", function(){
+    
+    let rsc = "energy";
+
+    it("starts car", function(done) {
+      let obj = {"action": "START"}
+      let url = base + valid_id + rsc;
+      request.post(url, obj, function(error, response, body){
+        console.log("Here");
+      })
+      done();
+    })
+  })
 });
