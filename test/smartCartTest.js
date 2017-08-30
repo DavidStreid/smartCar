@@ -37,7 +37,6 @@ describe("SmartCar API", function() {
       })
     })
   })
-
   describe("GM: getVehicleInfoService, SmartCar: /", function() {
     it("gets vehicle info if valid ID", function(done) {
 	  let url = base + valid_id
@@ -68,39 +67,46 @@ describe("SmartCar API", function() {
     });
   });
 
+  describe("GM:actionEngineService, SmartCar API: /engine", function(){
+    
+    let rsc = "engine";
+
+    commands = ["START", "STOP"];
+
+    for(let i = 0; i<commands.length; i++){
+      it(commands[i].toLowerCase() + " car", function(done){
+        let obj = {"action": commands[i]}
+        let url = base + valid_id + rsc;
+        request.post(url, obj, function(error, response, body){
+          expect(response.statusCode).to.equal(200);
+          cmd_status = JSON.parse(body).status;
+          expect(cmd_status == "error" || cmd_status == "success").to.equal(true);
+          done();
+        })
+      })
+    }
+  })
+
+  // NOTE - Delay in callback can cause errors if this test precedes others
   describe("GM:getEnergyService, SmartCar API: /fuel & /battery", function() {
-  	let energyType = [["fuel", "tankLevel","1234/"], ["battery", "batteryLevel","1235/"]];
+    let energyType = [["fuel", "tankLevel","1234/"], ["battery", "batteryLevel","1235/"]];
     it("gets energy levels as float", function(done) {
-    	for (let i = 0; i<energyType.length; i++){
-    		let type = energyType[i][0];
-    		let field = energyType[i][1];
-    		let id = energyType[i][2];
+      for (let i = 0; i<energyType.length; i++){
+        let type = energyType[i][0];
+        let field = energyType[i][1];
+        let id = energyType[i][2];
 
-  	    
-  		  let energy_url = base + id + type;
+        
+        let energy_url = base + id + type;
 
-  		  // Populate initial door locked status
-  	      request(energy_url, function(error, response, body) {
-  	        expect(response.statusCode).to.equal(200);
+        // Populate initial door locked status
+          request(energy_url, function(error, response, body) {
+            expect(response.statusCode).to.equal(200);
             let pct = JSON.parse(body)[field].percent;
             expect(0<=pct && pct <= 100).to.equal(true); 
-  	      });
-    	  }
+          });
+        }
         done();    
     });
   });
-
-  describe("GM:actionEngineService, SmartCar API: /engine", function(){
-    
-    let rsc = "energy";
-
-    it("starts car", function(done) {
-      let obj = {"action": "START"}
-      let url = base + valid_id + rsc;
-      request.post(url, obj, function(error, response, body){
-        console.log("Here");
-      })
-      done();
-    })
-  })
 });
