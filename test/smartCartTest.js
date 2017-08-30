@@ -31,7 +31,7 @@ describe("SmartCar API", function() {
         let obj = { "action": "start" }
         request.post(url, obj, function (error, response, body) {
           expect(JSON.parse(body).status).to.equal(404);
-          expect(JSON.parse(body).message).to.equal("Vehicle Not Found");
+          expect(JSON.parse(body).message).to.equal("Invalid command - should be either STOP or START");
           done();
         });
       })
@@ -76,13 +76,24 @@ describe("SmartCar API", function() {
     for(let i = 0; i<commands.length; i++){
       it(commands[i].toLowerCase() + " car", function(done){
         let obj = {"action": commands[i]}
-        let url = base + valid_id + rsc;
-        request.post(url, obj, function(error, response, body){
+        let engine_service = base + valid_id + rsc;
+
+        let options = {
+          url: engine_service,
+          headers: {
+            'content-type': 'application/json'
+          },
+          json: obj
+        };
+
+        function callback(error, response, body){
           expect(response.statusCode).to.equal(200);
-          cmd_status = JSON.parse(body).status;
+          cmd_status = body.status;
           expect(cmd_status == "error" || cmd_status == "success").to.equal(true);
           done();
-        })
+        }
+
+        request.post(options, callback);
       })
     }
   })
