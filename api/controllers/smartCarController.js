@@ -109,10 +109,9 @@ exports.engine = function(req, res) {
 
   let action = req.body.action
   // Validate input - Should be "STOP" or "START"
-  console.log(action);
+  console.log("\tAction: " + action);
   if(! (action == "STOP" || action == "START")){
     let body = {"status": 404, "message": "Invalid command - should be either STOP or START"}
-    console.log(body);
     res.json(body);
     return;
   }
