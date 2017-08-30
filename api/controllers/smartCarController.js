@@ -67,11 +67,14 @@ function callEnergyService(id, energyType, res){
 
   // Make Request
   let vehicleEnergyService = gmAPI + 'getEnergyService';
-  let VES_Req = {"id": id, "responseType": "JSON" };
+  let VES_Req = { json : {"id": id, "responseType": "JSON" } };
 
   request.post(
-    vehicleEnergyService, { json: VES_Req }, 
+    vehicleEnergyService, VES_Req , 
     function (error, response, body) {
+        console.log(id);
+        console.log(body.status)
+        console.log(error);
         if (!error && body.status == 200) {
           let data = body.data;
           // Null value indicates car does not have energy type requested
