@@ -72,9 +72,6 @@ function callEnergyService(id, energyType, res){
   request.post(
     vehicleEnergyService, VES_Req , 
     function (error, response, body) {
-        console.log(id);
-        console.log(body.status)
-        console.log(error);
         if (!error && body.status == 200) {
           let data = body.data;
           // Null value indicates car does not have energy type requested
@@ -110,23 +107,36 @@ exports.batteryRange = function(req, res) {
 exports.engine = function(req, res) {
   console.log("smartCarController::engine");
 
+  let action = req.body.action
+  // Validate input - Should be "STOP" or "START"
+  console.log(action);
+  if(! (action == "STOP" || action == "START")){
+    let body = {"status": 404, "message": "Invalid command - should be either STOP or START"}
+    console.log(body);
+    res.json(body);
+    return;
+  }
+
   // Make Request
   let vehicleEngineService = gmAPI + 'actionEngineService';
-  // TODO - Check action is either "STOP" or "START"
-  let command = req.body.action == "START" ? "START_VEHICLE" : "STOP_VEHICLE" ;
+  let command = (action == "START") ? "START_VEHICLE" : "STOP_VEHICLE" ;
   let VEngS_Object = {"id": req.params.id, "command": command, "responseType": "JSON" };
 
   request.post(
     vehicleEngineService, { json: VEngS_Object }, 
     function (error, response, body) {
       if (!error && body.status == 200) {
-        res.json({"status": body.actionResult.status})
+        let status = body.actionResult.status == "EXECUTED" ? "success" : "error";
+        let obj = {"status": status}
+        res.json(obj);
       }
       else if(body.status==404){
-        res.json({"status": 404, "message": "Vehicle Not Found"})
+        let status = {"status": 404, "message": "Vehicle Not Found"}
+        res.json(status)
       }
       else {
-        res.json({"status": 404, "message": "Service Not Available"}) 
+        status = {"status": 404, "message": "Service Not Available"};
+        res.json(status); 
       }
     }
   );
