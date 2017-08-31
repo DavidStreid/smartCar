@@ -6,6 +6,6 @@ var errors = [
 	[500, "Internal Server Error"]
 ]
 
-map = new Map(errors);
-
-moduleexports = map;
+module.exports = {
+	errors: new Map(errors)
+} 
