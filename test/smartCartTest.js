@@ -1,50 +1,72 @@
 var expect    = require("chai").expect;
 var api 	  = require("../api/controllers/smartCarController");
 var request   = require('request');
+var model = require("../api/models/smartCarModel");
 
 var base = "http://localhost:3000/vehicles/"
 var valid_id = "1234/"
+
+
+// TODO - Handle timeout
 describe("SmartCar API", function() {
 
   // NOTE - Test invalid ids first as their callback (with quicker latency) can interfere w/ other tests
   describe("SmartCar API with invalid id", function() {
-    // Check Invalid id
     let invalid_id = "4321/";
-    let host = base + invalid_id;
-    let endpoints = ['','doors','fuel','battery']
+    let endpoints = ['','doors','fuel','battery'];
+    let status_code = 404;
+
+    // Test GET endpoints 
     for(let i = 0; i<endpoints.length; i++){
       let e = endpoints[i];
-      let url = host + e;
+      let url = base + invalid_id + e;
+
       describe("Endpoint: " + url + " with invalidID", function(){
         it("returns 404 & Vehicle Not Found", function(done){
           request(url, function(error, response, body) {
-            expect(JSON.parse(body).status).to.equal(404);
-            expect(JSON.parse(body).message).to.equal("Vehicle Not Found");
+            expect(JSON.parse(body).status).to.equal(status_code);
+            expect(JSON.parse(body).message).to.equal(model.errors.get(status_code));
             done();
           });
         })
       });
     }
-    let url = host + "engine"
-    describe("Endpoint: " + url + " with invalidID", function(){
+
+    // Test POST endpoints - /engine
+    let engine_service = base + invalid_id + "engine";
+    describe("Endpoint: " + engine_service + " with invalidID", function(){
       it("returns 404 & Vehicle Not Found", function(done){
-        let obj = { "action": "start" }
-        request.post(url, obj, function (error, response, body) {
-          expect(JSON.parse(body).status).to.equal(404);
-          expect(JSON.parse(body).message).to.equal("Invalid command - should be either STOP or START");
+        let obj = { "action": "START" }
+        
+        let options = {
+          url: engine_service,
+          headers: {
+            'content-type': 'application/json'
+          },
+          json: obj
+        };
+
+        function callback (error, response, body) {
+          expect(body.status).to.equal(status_code);
+          expect(body.message).to.equal(model.errors.get(status_code));
           done();
-        });
+        }
+
+        request.post(options, callback);
       })
     })
   })
+
   describe("GM: getVehicleInfoService, SmartCar: /", function() {
     it("gets vehicle info if valid ID", function(done) {
-	  let url = base + valid_id
-      request(url, function(error, response, body) {
-        expect(response.statusCode).to.equal(200);
-        expect(body).to.equal("{\"vin\":\"123123412412\",\"color\":\"Metallic Silver\",\"doorcount\":4,\"driveTrain\":\"v8\"}");
-        done();
-      });
+	  let url = base + valid_id;
+    let status_code = 200;
+
+    request(url, function(error, response, body) {
+      expect(response.statusCode).to.equal(status_code);
+      expect(body).to.equal("{\"vin\":\"123123412412\",\"color\":\"Metallic Silver\",\"doorcount\":4,\"driveTrain\":\"v8\"}");
+      done();
+    });
     });
   });
 
@@ -53,25 +75,27 @@ describe("SmartCar API", function() {
 	  let rsc = "doors";
 	  let url = base + valid_id + rsc;
 	  var pos = new Set(["frontLeft", "backRight", "backLeft", "frontRight"]);
+    let status_code = 200;
 
 	  // Populate initial door locked status
-      request(url, function(error, response, body) {
-        expect(response.statusCode).to.equal(200);
-        let doors = JSON.parse(body).door_data;
-        for(let i = 0; i<doors.length; i++){
-        	expect(true).to.equal(pos.has(doors[i].location));
-        	expect(typeof(doors[i].locked)).to.equal("boolean");
-        }
-        done();
-      });
+    request(url, function(error, response, body) {
+      expect(response.statusCode).to.equal(status_code);
+
+      let doors = JSON.parse(body).door_data;
+      for(let i = 0; i<doors.length; i++){
+      	expect(true).to.equal(pos.has(doors[i].location));
+      	expect(typeof(doors[i].locked)).to.equal("boolean");
+      }
+      done();
+    });
     });
   });
 
   describe("GM:actionEngineService, SmartCar API: /engine", function(){
     
     let rsc = "engine";
-
     commands = ["START", "STOP"];
+    let status_code = 200;
 
     for(let i = 0; i<commands.length; i++){
       it(commands[i].toLowerCase() + " car", function(done){
@@ -87,7 +111,7 @@ describe("SmartCar API", function() {
         };
 
         function callback(error, response, body){
-          expect(response.statusCode).to.equal(200);
+          expect(response.statusCode).to.equal(status_code);
           cmd_status = body.status;
           expect(cmd_status == "error" || cmd_status == "success").to.equal(true);
           done();
