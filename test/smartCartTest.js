@@ -23,11 +23,13 @@ describe("SmartCar API", function() {
 
       describe("Endpoint: " + url + " with invalidID", function(){
         it("returns 404 & Vehicle Not Found", function(done){
-          request(url, function(error, response, body) {
+          function callback (error, response, body) {
             expect(JSON.parse(body).status).to.equal(status_code);
             expect(JSON.parse(body).message).to.equal(model.errors.get(status_code));
             done();
-          });
+          }
+
+          request(url, callback);
         })
       });
     }
@@ -37,12 +39,9 @@ describe("SmartCar API", function() {
     describe("Endpoint: " + engine_service + " with invalidID", function(){
       it("returns 404 & Vehicle Not Found", function(done){
         let obj = { "action": "START" }
-        
         let options = {
           url: engine_service,
-          headers: {
-            'content-type': 'application/json'
-          },
+          headers: { 'content-type': 'application/json' },
           json: obj
         };
 
@@ -59,35 +58,36 @@ describe("SmartCar API", function() {
 
   describe("GM: getVehicleInfoService, SmartCar: /", function() {
     it("gets vehicle info if valid ID", function(done) {
-	  let url = base + valid_id;
-    let status_code = 200;
-
-    request(url, function(error, response, body) {
-      expect(response.statusCode).to.equal(status_code);
-      expect(body).to.equal("{\"vin\":\"123123412412\",\"color\":\"Metallic Silver\",\"doorcount\":4,\"driveTrain\":\"v8\"}");
-      done();
-    });
+  	  let url = base + valid_id;
+      let status_code = 200;
+      function callback(error, response, body) {
+        expect(response.statusCode).to.equal(status_code);
+        expect(body).to.equal("{\"vin\":\"123123412412\",\"color\":\"Metallic Silver\",\"doorcount\":4,\"driveTrain\":\"v8\"}");
+        done();
+      }
+      
+      request(url, callback);
     });
   });
 
   describe("GM:getSecurityStatusService, SmartCar: /door", function() {
     it("gets security status as boolean of valid door if valid ID", function(done) {
-	  let rsc = "doors";
-	  let url = base + valid_id + rsc;
-	  var pos = new Set(["frontLeft", "backRight", "backLeft", "frontRight"]);
-    let status_code = 200;
+  	  let rsc = "doors";
+  	  let url = base + valid_id + rsc;
+  	  var pos = new Set(["frontLeft", "backRight", "backLeft", "frontRight"]);
+      let status_code = 200;
+      function callback (error, response, body) {
+        expect(response.statusCode).to.equal(status_code);
 
-	  // Populate initial door locked status
-    request(url, function(error, response, body) {
-      expect(response.statusCode).to.equal(status_code);
-
-      let doors = JSON.parse(body).door_data;
-      for(let i = 0; i<doors.length; i++){
-      	expect(true).to.equal(pos.has(doors[i].location));
-      	expect(typeof(doors[i].locked)).to.equal("boolean");
+        let doors = JSON.parse(body).door_data;
+        for(let i = 0; i<doors.length; i++){
+          expect(true).to.equal(pos.has(doors[i].location));
+          expect(typeof(doors[i].locked)).to.equal("boolean");
+        }
+        done();
       }
-      done();
-    });
+
+      request(url, callback);
     });
   });
 
@@ -101,7 +101,6 @@ describe("SmartCar API", function() {
       it(commands[i].toLowerCase() + " car", function(done){
         let obj = {"action": commands[i]}
         let engine_service = base + valid_id + rsc;
-
         let options = {
           url: engine_service,
           headers: {
@@ -113,7 +112,7 @@ describe("SmartCar API", function() {
         function callback(error, response, body){
           expect(response.statusCode).to.equal(status_code);
           cmd_status = body.status;
-          expect(cmd_status == "error" || cmd_status == "success").to.equal(true);
+          expect(cmd_status == "error" || cmd_status == "success").to.equal(true); 
           done();
         }
 
@@ -131,17 +130,16 @@ describe("SmartCar API", function() {
         let field = energyType[i][1];
         let id = energyType[i][2];
 
-        
         let energy_url = base + id + type;
-
-        // Populate initial door locked status
-          request(energy_url, function(error, response, body) {
-            expect(response.statusCode).to.equal(200);
-            let pct = JSON.parse(body)[field].percent;
-            expect(0<=pct && pct <= 100).to.equal(true); 
-          });
+        function callback (error, response, body){
+          expect(response.statusCode).to.equal(200);
+          let pct = JSON.parse(body)[field].percent;
+          expect(0<=pct && pct <= 100).to.equal(true);    // Should return a percent [0,100]
         }
-        done();    
+
+        request(energy_url, callback);
+      };
+      done();
     });
   });
-});
+})
