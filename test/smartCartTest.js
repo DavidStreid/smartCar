@@ -6,7 +6,11 @@ var model = require("../api/models/smartCarModel");
 var base = "http://localhost:3000/vehicles/"
 var valid_id = "1234/"
 
-
+/*
+  Test class that tests valid & invalid requests to each endpoint of smartCar API
+  $ npm run start
+  $ npm run test      (separate window)
+*/
 describe("SmartCar API", function() {
 
   // NOTE - Test invalid ids first as their callback (with quicker latency) can interfere w/ other tests
