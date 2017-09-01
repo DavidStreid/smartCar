@@ -3,12 +3,28 @@ var request = require('request');
 var model   = require("../models/smartCarModel");
 var gmAPI   = "http://gmapi.azurewebsites.net/"
 
+var logging_enabled = true;     // Log method handling of requests
+
 exports.vehicleInfo = function(req, res) {
-   // GM_Resp: { vin, color, fourDoorSedan, twoDoorCoupe, driveTrain }
+  /*
+    Requests vehilcle information (vin, color, # doors, & driveTrain) from GM API
+    GM Resp: {...
+      "data": { 
+        "vin": {"type": "String","value": "..." },
+        "color": { "type": "String", "value": "..."},
+        "fourDoorSedan": { "type": "Boolean", "value": "..." },
+        "twoDoorCoupe": { "type": "Boolean", "value": "..." },
+        "driveTrain": { "type": "String", "value": "..." }
+      }
+    }
+    SmartCar Resp: {
+      { "vin": "...", "color": "...", "doorCount": int, "driveTrain": "..." }
+    }
+  */
 
-  console.log("smartCarController::vehicleInfo");
+  if(logging_enabled) {console.log("smartCarController::vehicleInfo"); }
 
-  // Make Request
+  // Request Set-up
   let vehicleInfoService = gmAPI + 'getVehicleInfoService';
   let VIS_Req = {json: {"id": req.params.id, "responseType": "JSON" }};
   function callback(error,response,body){
@@ -26,108 +42,144 @@ exports.vehicleInfo = function(req, res) {
     } 
   }
 
+  // Make Request
   let reqPost = request.post(vehicleInfoService, VIS_Req, callback);
 };
 
 exports.security = function(req, res) {
-  console.log("smartCarController::security");
+  /*
+    Requests door information of car 
+    GM Resp: {
+      ...
+      "data": {
+      "doors": {
+        "type": "Array",
+        "values": [ { "location": { "type": "String", "value": "..."},
+                        "locked": { "type": "Boolean", "value": "..." }
+                    ...]
+      }
+    }
+    SmartCar Resp: { [ { "location": "...", "locked": boolean }, ... ] }
+  */
+
+  if(logging_enabled) { console.log("smartCarController::security"); }
+
+  // Request Set-Up
+  let vehicleSecurityService = gmAPI + 'getSecurityStatusService';
+  let VSS_Req = { json: {"id": req.params.id, "responseType": "JSON" } } ;
+  function callback(error,response,body){
+    if (!error && body.status == 200) {
+      let doors = body.data.doors.values;
+      let door_data = []
+      for(let i = 0; i<doors.length; i++){
+        door_data.push({
+          "location": doors[i].location.value, 
+          "locked": doors[i].locked.value=="False" ? false : true})
+      }
+      res.json({door_data})
+    }
+    else{
+      handleFailStatus(res,body.status);
+    } 
+  }
 
   // Make Request
-  let vehicleSecurityService = gmAPI + 'getSecurityStatusService';
-  let VSS_Req = {"id": req.params.id, "responseType": "JSON" };
-  request.post(
-    vehicleSecurityService, { json: VSS_Req }, 
-    function (error, response, body) {
-      if (!error && body.status == 200) {
-        let doors = body.data.doors.values;
-        let door_data = []
-        for(let i = 0; i<doors.length; i++){
-          door_data.push({
-            "location": doors[i].location.value, 
-            "locked": doors[i].locked.value=="False" ? false : true})
-        }
-        res.json({door_data})
-      }
-      else{
-        handleFailStatus(res,body.status);
-      } 
-    }
-  );
+  request.post( vehicleSecurityService, VSS_Req , callback );
 };
 
 function callEnergyService(id, energyType, res){
-  // id: int - vehicle id, energyType: string - tankLevel/batteryLevel
-  console.log("smartCarController::callEnergyService");
+  /*
+    Helper function to request battery/fuel levels. Note - either tankLevel or batteryLevel will have a "null" value
+    GM Resp: {
+      ...
+      "data": {
+        "tankLevel": { "type": "Number", "value": "..." },  
+        "batteryLevel": { "type": "Number", "value": "..." 
+      }
+    }
+    SmartCar Resp: { "percent": int }
+  */
+  if(logging_enabled) { console.log("smartCarController::callEnergyService"); }
 
-  // Make Request
+  // Request Set-Up
   let vehicleEnergyService = gmAPI + 'getEnergyService';
   let VES_Req = { json : {"id": id, "responseType": "JSON" } };
-
-  request.post(
-    vehicleEnergyService, VES_Req , 
-    function (error, response, body) {
-      if (!error && body.status == 200) {
-        let data = body.data;
-        // Null value indicates car does not have energy type requested
-        if(data[energyType].value=="null"){
-          res.json({"Error": "Incorrect CarType - Car does not have a " + energyType})  
-        }
-        else {
-          res.json({"percent": parseFloat(data[energyType].value)});
-        }
+  function callback(error,response,body){
+    if (!error && body.status == 200) {
+      let data = body.data;
+      // Null value indicates car does not have energy type requested
+      if(data[energyType].value=="null"){
+        res.json({"Error": "Incorrect CarType - Car does not have a " + energyType})  
       }
-      else{
-        handleFailStatus(res,body.status);
-      } 
+      else {
+        res.json({"percent": parseFloat(data[energyType].value)});
+      }
     }
-  );
+    else{
+      handleFailStatus(res,body.status);
+    } 
+  }
+
+  // Make Request
+  request.post( vehicleEnergyService, VES_Req , callback );
 }
 
+/*
+  Handle smartCar requests for tank & battery levels using same GM endpoint
+*/
 exports.fuelRange = function(req, res) {
-  console.log("smartCarController::fuelRange");
+  if(logging_enabled) { console.log("smartCarController::fuelRange"); }
   callEnergyService(req.params.id,"tankLevel",res)
 };
-
-
 exports.batteryRange = function(req, res) {
-  console.log("smartCarController::batteryRange");
+  if(logging_enabled) { console.log("smartCarController::batteryRange"); }
   callEnergyService(req.params.id,"batteryLevel",res)
 };
 
 
 exports.engine = function(req, res) {
-  console.log("smartCarController::engine");
+  /*
+    Requests to start/stop vehicle
+
+    GM Resp: {
+      ...
+      "actionResult": { "status": "EXECUTED|FAILED" }
+    }
+    SmartCar Resp: { "status": "success|error" }
+  */
+  if(logging_enabled) { console.log("smartCarController::engine"); } 
 
   let action = req.body.action
+
   // Validate input - Should be "STOP" or "START"
-  console.log("\tAction: " + action);
   if(! (action == "STOP" || action == "START")){
     let body = {"status": 404, "message": "Invalid command - should be either STOP or START"}
     res.json(body);
     return;
   }
 
-  // Make Request
+  // Request Set-Up
   let vehicleEngineService = gmAPI + 'actionEngineService';
   let command = (action == "START") ? "START_VEHICLE" : "STOP_VEHICLE" ;
-  let VEngS_Object = {"id": req.params.id, "command": command, "responseType": "JSON" };
-
-  request.post(
-    vehicleEngineService, { json: VEngS_Object }, 
-    function (error, response, body) {
-      if (!error && body.status == 200) {
-        let status = body.actionResult.status == "EXECUTED" ? "success" : "error";
-        let obj = {"status": status}
-        res.json(obj);
-      }
-      else{
-        handleFailStatus(res,body.status);
-      } 
+  let VEngS_Object = { json: {"id": req.params.id, "command": command, "responseType": "JSON" } };
+  function callback(error, response, body){
+    if (!error && body.status == 200) {
+      let status = body.actionResult.status == "EXECUTED" ? "success" : "error";
+      let obj = {"status": status}
+      res.json(obj);
     }
-  );
+    else{
+      handleFailStatus(res,body.status);
+    } 
+  }
+  // Make Request
+  request.post( vehicleEngineService, VEngS_Object , callback );
 };
 
 function handleFailStatus(res, status){
+  /*
+    Helper function to handle non-200 responses from the GM API
+  */
   if(status==404){
     let status = {"status": 404, "message": "Vehicle Not Found"}
     res.json(status)
