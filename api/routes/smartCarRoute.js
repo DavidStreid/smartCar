@@ -2,7 +2,7 @@
 module.exports = function(app) {
   var smartCar = require('../controllers/smartCarController');
 
-  // todoList Routes
+  // SmartCar API Routes
   app.route('/vehicles/:id')
     .get(smartCar.vehicleInfo)
 
