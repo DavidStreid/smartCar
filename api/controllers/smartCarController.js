@@ -1,7 +1,7 @@
 'use strict';
 var request = require('request');
-
-var gmAPI = "http://gmapi.azurewebsites.net/"
+var model   = require("../models/smartCarModel");
+var gmAPI   = "http://gmapi.azurewebsites.net/"
 
 exports.vehicleInfo = function(req, res) {
    // GM_Resp: { vin, color, fourDoorSedan, twoDoorCoupe, driveTrain }
@@ -22,10 +22,10 @@ exports.vehicleInfo = function(req, res) {
       })
     }
     else if(body.status==404){
-      res.json({"status": 404, "message": "Vehicle Not Found"})
+      res.json({"status": 404, "message": model.errors.get(404)})
     }
     else {
-      res.json({"status": 404, "message": "Service Not Available"}) 
+      res.json({"status": 500, "message": model.errors.get(500)}) 
     }
   }
 
@@ -52,10 +52,10 @@ exports.security = function(req, res) {
           res.json({door_data})
         }
         else if(body.status==404){
-          res.json({"status": 404, "message": "Vehicle Not Found"})
+          res.json({"status": 404, "message": model.errors.get(404)})
         }
         else {
-          res.json({"status": 404, "message": "Service Not Available"}) 
+          res.json({"status": 500, "message": model.errors.get(500)}) 
         }
     }
   );
@@ -134,9 +134,13 @@ exports.engine = function(req, res) {
         res.json(status)
       }
       else {
-        status = {"status": 404, "message": "Service Not Available"};
+        status = {"status": 500, "message": "Service Not Available"};
         res.json(status); 
       }
     }
   );
 };
+
+function handleFailStatus(res, status){
+  // TODO
+}
