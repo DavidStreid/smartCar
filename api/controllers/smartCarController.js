@@ -21,12 +21,9 @@ exports.vehicleInfo = function(req, res) {
         "driveTrain": data.driveTrain.value
       })
     }
-    else if(body.status==404){
-      res.json({"status": 404, "message": model.errors.get(404)})
-    }
-    else {
-      res.json({"status": 500, "message": model.errors.get(500)}) 
-    }
+    else{
+      handleFailStatus(res,body.status);
+    } 
   }
 
   let reqPost = request.post(vehicleInfoService, VIS_Req, callback);
@@ -41,22 +38,19 @@ exports.security = function(req, res) {
   request.post(
     vehicleSecurityService, { json: VSS_Req }, 
     function (error, response, body) {
-        if (!error && body.status == 200) {
-          let doors = body.data.doors.values;
-          let door_data = []
-          for(let i = 0; i<doors.length; i++){
-            door_data.push({
-              "location": doors[i].location.value, 
-              "locked": doors[i].locked.value=="False" ? false : true})
-          }
-          res.json({door_data})
+      if (!error && body.status == 200) {
+        let doors = body.data.doors.values;
+        let door_data = []
+        for(let i = 0; i<doors.length; i++){
+          door_data.push({
+            "location": doors[i].location.value, 
+            "locked": doors[i].locked.value=="False" ? false : true})
         }
-        else if(body.status==404){
-          res.json({"status": 404, "message": model.errors.get(404)})
-        }
-        else {
-          res.json({"status": 500, "message": model.errors.get(500)}) 
-        }
+        res.json({door_data})
+      }
+      else{
+        handleFailStatus(res,body.status);
+      } 
     }
   );
 };
@@ -72,22 +66,19 @@ function callEnergyService(id, energyType, res){
   request.post(
     vehicleEnergyService, VES_Req , 
     function (error, response, body) {
-        if (!error && body.status == 200) {
-          let data = body.data;
-          // Null value indicates car does not have energy type requested
-          if(data[energyType].value=="null"){
-            res.json({"Error": "Incorrect CarType - Car does not have a " + energyType})  
-          }
-          else {
-            res.json({"percent": parseFloat(data[energyType].value)});
-          }
-        }
-        else if(body.status==404){
-          res.json({"status": 404, "message": "Vehicle Not Found"})
+      if (!error && body.status == 200) {
+        let data = body.data;
+        // Null value indicates car does not have energy type requested
+        if(data[energyType].value=="null"){
+          res.json({"Error": "Incorrect CarType - Car does not have a " + energyType})  
         }
         else {
-          res.json({"status": 404, "message": "Service Not Available"}) 
+          res.json({"percent": parseFloat(data[energyType].value)});
         }
+      }
+      else{
+        handleFailStatus(res,body.status);
+      } 
     }
   );
 }
@@ -129,18 +120,20 @@ exports.engine = function(req, res) {
         let obj = {"status": status}
         res.json(obj);
       }
-      else if(body.status==404){
-        let status = {"status": 404, "message": "Vehicle Not Found"}
-        res.json(status)
-      }
-      else {
-        status = {"status": 500, "message": "Service Not Available"};
-        res.json(status); 
-      }
+      else{
+        handleFailStatus(res,body.status);
+      } 
     }
   );
 };
 
 function handleFailStatus(res, status){
-  // TODO
+  if(status==404){
+    let status = {"status": 404, "message": "Vehicle Not Found"}
+    res.json(status)
+  }
+  else {
+    status = {"status": 500, "message": "Service Not Available"};
+    res.json(status); 
+  }
 }
