@@ -7,7 +7,6 @@ var base = "http://localhost:3000/vehicles/"
 var valid_id = "1234/"
 
 
-// TODO - Handle timeout
 describe("SmartCar API", function() {
 
   // NOTE - Test invalid ids first as their callback (with quicker latency) can interfere w/ other tests
@@ -34,13 +33,13 @@ describe("SmartCar API", function() {
       });
     }
 
-    // Test POST endpoints - /engine
-    let engine_service = base + invalid_id + "engine";
-    describe("Endpoint: " + engine_service + " with invalidID", function(){
+    // Test POST endpoint - /engine
+    let engine_url = base + invalid_id + "engine";
+    describe("Endpoint: " + engine_url + " with invalidID", function(){
       it("returns 404 & Vehicle Not Found", function(done){
         let obj = { "action": "START" }
         let options = {
-          url: engine_service,
+          url: engine_url,
           headers: { 'content-type': 'application/json' },
           json: obj
         };
@@ -58,7 +57,7 @@ describe("SmartCar API", function() {
 
   describe("GM: getVehicleInfoService, SmartCar: /", function() {
     it("gets vehicle info if valid ID", function(done) {
-  	  let url = base + valid_id;
+  	  let info_url = base + valid_id;
       let status_code = 200;
       function callback(error, response, body) {
         expect(response.statusCode).to.equal(status_code);
@@ -66,14 +65,14 @@ describe("SmartCar API", function() {
         done();
       }
       
-      request(url, callback);
+      request(info_url, callback);
     });
   });
 
   describe("GM:getSecurityStatusService, SmartCar: /door", function() {
     it("gets security status as boolean of valid door if valid ID", function(done) {
   	  let rsc = "doors";
-  	  let url = base + valid_id + rsc;
+  	  let door_url = base + valid_id + rsc;
   	  var pos = new Set(["frontLeft", "backRight", "backLeft", "frontRight"]);
       let status_code = 200;
       function callback (error, response, body) {
@@ -87,7 +86,7 @@ describe("SmartCar API", function() {
         done();
       }
 
-      request(url, callback);
+      request(door_url, callback);
     });
   });
 
@@ -100,9 +99,9 @@ describe("SmartCar API", function() {
     for(let i = 0; i<commands.length; i++){
       it(commands[i].toLowerCase() + " car", function(done){
         let obj = {"action": commands[i]}
-        let engine_service = base + valid_id + rsc;
+        let engine_url = base + valid_id + rsc;
         let options = {
-          url: engine_service,
+          url: engine_url,
           headers: {
             'content-type': 'application/json'
           },
